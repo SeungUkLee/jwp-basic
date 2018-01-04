@@ -66,4 +66,7 @@ public class User {
         return true;
     }
 
+    public boolean isSameUser(User user) {
+        return userId.equals(user.userId);
+    }
 }
