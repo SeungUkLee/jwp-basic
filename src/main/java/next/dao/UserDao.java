@@ -12,32 +12,43 @@ import next.model.User;
 
 public class UserDao {
     public void insert(User user) throws SQLException {
-        Connection con = null;
-        PreparedStatement pstmt = null;
-        try {
-            con = ConnectionManager.getConnection();
-            String sql = "INSERT INTO USERS VALUES (?, ?, ?, ?)";
-            pstmt = con.prepareStatement(sql);
-            pstmt.setString(1, user.getUserId());
-            pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getName());
-            pstmt.setString(4, user.getEmail());
-
-            pstmt.executeUpdate();
-        } finally {
-            if (pstmt != null) {
-                pstmt.close();
+        InsertJdbcTemplate insertJdbcTemplate = new InsertJdbcTemplate() {
+            @Override
+            public void setValuesForInsert(User user, PreparedStatement pstmt) throws SQLException {
+                pstmt.setString(1, user.getUserId());
+                pstmt.setString(2, user.getPassword());
+                pstmt.setString(3, user.getName());
+                pstmt.setString(4, user.getEmail());
             }
 
-            if (con != null) {
-                con.close();
+            @Override
+            public String createQueryForInsert() {
+                return "INSERT INTO USERS VALUES (?, ?, ?, ?)";
             }
-        }
+        };
+        insertJdbcTemplate.insert(user);
     }
 
     public void update(User user) throws SQLException {
-        // TODO 구현 필요함.
+        UpdateJdbcTemplate updateJdbcTemplate = new UpdateJdbcTemplate() {
+            @Override
+            public void setValuesForUpdate(User user, PreparedStatement pstmt) throws SQLException {
+                pstmt.setString(1, user.getUserId());
+                pstmt.setString(2, user.getPassword());
+                pstmt.setString(3, user.getName());
+                pstmt.setString(4, user.getEmail());
+            }
+
+            @Override
+            public String createQueryForUpdate() {
+                // TODO update query 수정 필요.
+                return "INSERT INTO USERS VALUES (?, ?, ?, ?)";
+            }
+        };
+
+        updateJdbcTemplate.update(user);
     }
+
 
     public List<User> findAll() throws SQLException {
         // TODO 구현 필요함.
