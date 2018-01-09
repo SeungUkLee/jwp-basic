@@ -8,51 +8,96 @@ import java.util.ArrayList;
 import java.util.List;
 
 import core.jdbc.ConnectionManager;
+import core.jdbc.JdbcTamplate;
+import core.jdbc.SelectJdbcTemplate;
 import next.model.User;
 
 public class UserDao {
     public void insert(User user) throws SQLException {
-        InsertJdbcTemplate insertJdbcTemplate = new InsertJdbcTemplate() {
+        String insertQuery = "INSERT INTO USERS VALUES (?, ?, ?, ?)";
+
+        JdbcTamplate jdbcTamplate = new JdbcTamplate() {
             @Override
-            public void setValuesForInsert(User user, PreparedStatement pstmt) throws SQLException {
+            public void setValues(PreparedStatement pstmt) throws SQLException {
                 pstmt.setString(1, user.getUserId());
                 pstmt.setString(2, user.getPassword());
                 pstmt.setString(3, user.getName());
                 pstmt.setString(4, user.getEmail());
             }
-
-            @Override
-            public String createQueryForInsert() {
-                return "INSERT INTO USERS VALUES (?, ?, ?, ?)";
-            }
         };
-        insertJdbcTemplate.insert(user);
+
+        jdbcTamplate.update(insertQuery);
     }
 
     public void update(User user) throws SQLException {
-        UpdateJdbcTemplate updateJdbcTemplate = new UpdateJdbcTemplate() {
+        JdbcTamplate jdbcTamplate = new JdbcTamplate() {
             @Override
-            public void setValuesForUpdate(User user, PreparedStatement pstmt) throws SQLException {
-                pstmt.setString(1, user.getUserId());
-                pstmt.setString(2, user.getPassword());
-                pstmt.setString(3, user.getName());
-                pstmt.setString(4, user.getEmail());
-            }
-
-            @Override
-            public String createQueryForUpdate() {
-                // TODO update query 수정 필요.
-                return "INSERT INTO USERS VALUES (?, ?, ?, ?)";
+            public void setValues(PreparedStatement pstmt) throws SQLException {
+                pstmt.setString(1, user.getPassword());
+                pstmt.setString(2, user.getName());
+                pstmt.setString(3, user.getEmail());
+                pstmt.setString(4, user.getUserId());
             }
         };
-
-        updateJdbcTemplate.update(user);
+        String updateQuery = "UPDATE USERS SET password = ?, name = ?, email = ? WHERE userId = ?";
+        jdbcTamplate.update(updateQuery);
     }
 
 
     public List<User> findAll() throws SQLException {
-        // TODO 구현 필요함.
-        return new ArrayList<User>();
+        SelectJdbcTemplate selectJdbcTemplate = new SelectJdbcTemplate() {
+            @Override
+            public void setValues() {
+
+            }
+
+            @Override
+            public Object mapRow(ResultSet rs) throws SQLException {
+                User user = new User(
+                        rs.getString("userId"),
+                        rs.getString("password"),
+                        rs.getString("name"),
+                        rs.getString("email")
+                );
+                return user;
+            }
+        };
+        String findAllSelcectQuery = "SELECT userId, password, name, email FROM USERS";
+
+        return selectJdbcTemplate.query(findAllSelcectQuery);
+//        Connection con = null;
+//        PreparedStatement pstmt = null;
+//        ResultSet rs = null;
+//        List<User> userList = new ArrayList<>();
+//
+//        try {
+//            con = ConnectionManager.getConnection();
+//            String sql = "SELECT userId, password, name, email FROM USERS";
+//            pstmt = con.prepareStatement(sql);
+//
+//            rs = pstmt.executeQuery();
+//
+//            while (rs.next()) {
+//                User user = new User(
+//                        rs.getString("userId"),
+//                        rs.getString("password"),
+//                        rs.getString("name"),
+//                        rs.getString("email")
+//                );
+//                userList.add(user);
+//            }
+//
+//        } finally {
+//            if (rs != null) {
+//                rs.close();
+//            }
+//            if (pstmt != null) {
+//                pstmt.close();
+//            }
+//            if (con != null) {
+//                con.close();
+//            }
+//        }
     }
 
     public User findByUserId(String userId) throws SQLException {
