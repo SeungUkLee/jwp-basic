@@ -10,7 +10,7 @@ import java.sql.SQLException;
 /**
  * Created by SeungUk on 2018. 1. 9..
  */
-abstract public class JdbcTamplate {
+public abstract class JdbcTamplate {
     public void update(String query) throws SQLException {
         Connection con = null;
         PreparedStatement pstmt = null;

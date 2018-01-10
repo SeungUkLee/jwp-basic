@@ -13,29 +13,26 @@ import java.util.List;
  * Created by SeungUk on 2018. 1. 9..
  */
 abstract public class SelectJdbcTemplate {
-    public List<User> query(String query) throws SQLException {
+    public List query(String query) throws SQLException {
         Connection con = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
-        List<User> userList = new ArrayList<>();
+//        List<User> userList = new ArrayList<>();
 
         try {
             con = ConnectionManager.getConnection();
             pstmt = con.prepareStatement(query);
 
+            setValues(pstmt);
             rs = pstmt.executeQuery();
 
+            List<Object> result = new ArrayList<>();
             while (rs.next()) {
-//                User user = new User(
-//                        rs.getString("userId"),
-//                        rs.getString("password"),
-//                        rs.getString("name"),
-//                        rs.getString("email")
-//                );
-                User user = (User) mapRow(rs);
-                userList.add(user);
+//                User user = (User) mapRow(rs);
+//                userList.add(user);
+                result.add(mapRow(rs));
             }
-
+            return result;
 
         } finally {
             if (rs != null) {
@@ -48,14 +45,18 @@ abstract public class SelectJdbcTemplate {
                 con.close();
             }
         }
-
-        return userList;
+//        return userList;
     }
 
-//    public Object queryForObject() {
-//
-//    }
+    public Object queryForObject(String query) throws SQLException {
+        List result = query(query);
+        if (result.isEmpty()) {
+            return null;
+        }
 
-    abstract public void setValues();
+        return result.get(0);
+    }
+
+    abstract public void setValues(PreparedStatement pstmt) throws SQLException;
     abstract public Object mapRow(ResultSet rs) throws SQLException;
 }

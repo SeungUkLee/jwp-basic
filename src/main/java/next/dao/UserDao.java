@@ -47,46 +47,46 @@ public class UserDao {
     public List<User> findAll() throws SQLException {
         SelectJdbcTemplate selectJdbcTemplate = new SelectJdbcTemplate() {
             @Override
-            public void setValues() {
+            public void setValues(PreparedStatement pstmt) throws SQLException{
 
             }
 
             @Override
             public Object mapRow(ResultSet rs) throws SQLException {
-                User user = new User(
+                return new User(
                         rs.getString("userId"),
                         rs.getString("password"),
                         rs.getString("name"),
                         rs.getString("email")
                 );
-                return user;
             }
         };
         String findAllSelcectQuery = "SELECT userId, password, name, email FROM USERS";
 
-        return selectJdbcTemplate.query(findAllSelcectQuery);
+        return (List<User>) selectJdbcTemplate.query(findAllSelcectQuery);
+    }
+
+//    public User findByUserId(String userId) throws SQLException {
+//
+//
 //        Connection con = null;
 //        PreparedStatement pstmt = null;
 //        ResultSet rs = null;
-//        List<User> userList = new ArrayList<>();
-//
 //        try {
 //            con = ConnectionManager.getConnection();
-//            String sql = "SELECT userId, password, name, email FROM USERS";
+//            String sql = "SELECT userId, password, name, email FROM USERS WHERE userid=?";
 //            pstmt = con.prepareStatement(sql);
+//            pstmt.setString(1, userId);
 //
 //            rs = pstmt.executeQuery();
 //
-//            while (rs.next()) {
-//                User user = new User(
-//                        rs.getString("userId"),
-//                        rs.getString("password"),
-//                        rs.getString("name"),
-//                        rs.getString("email")
-//                );
-//                userList.add(user);
+//            User user = null;
+//            if (rs.next()) {
+//                user = new User(rs.getString("userId"), rs.getString("password"), rs.getString("name"),
+//                        rs.getString("email"));
 //            }
 //
+//            return user;
 //        } finally {
 //            if (rs != null) {
 //                rs.close();
@@ -98,37 +98,27 @@ public class UserDao {
 //                con.close();
 //            }
 //        }
-    }
+//    }
 
     public User findByUserId(String userId) throws SQLException {
-        Connection con = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        try {
-            con = ConnectionManager.getConnection();
-            String sql = "SELECT userId, password, name, email FROM USERS WHERE userid=?";
-            pstmt = con.prepareStatement(sql);
-            pstmt.setString(1, userId);
-
-            rs = pstmt.executeQuery();
-
-            User user = null;
-            if (rs.next()) {
-                user = new User(rs.getString("userId"), rs.getString("password"), rs.getString("name"),
-                        rs.getString("email"));
+        SelectJdbcTemplate selectJdbcTemplate = new SelectJdbcTemplate() {
+            @Override
+            public void setValues(PreparedStatement pstmt) throws SQLException {
+                pstmt.setString(1, userId);
             }
 
-            return user;
-        } finally {
-            if (rs != null) {
-                rs.close();
+            @Override
+            public Object mapRow(ResultSet rs) throws SQLException {
+                return new User(
+                        rs.getString("userId"),
+                        rs.getString("password"),
+                        rs.getString("name"),
+                        rs.getString("email")
+                );
             }
-            if (pstmt != null) {
-                pstmt.close();
-            }
-            if (con != null) {
-                con.close();
-            }
-        }
+        };
+
+        String findByUserIdSelectQuery = "SELECT userId, password, name, email FROM USERS WHERE userId = ?";
+        return (User)selectJdbcTemplate.queryForObject(findByUserIdSelectQuery);
     }
 }
