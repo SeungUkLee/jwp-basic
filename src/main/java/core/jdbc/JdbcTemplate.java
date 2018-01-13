@@ -14,37 +14,23 @@ import java.util.List;
  * Created by SeungUk on 2018. 1. 9..
  */
 public class JdbcTemplate {
-    public void update(String query, PreparedStatementSetter pss) throws SQLException {
-        Connection con = null;
-        PreparedStatement pstmt = null;
+    public void update(String query, PreparedStatementSetter pss) throws DataAccessException {
+        try (Connection conn = ConnectionManager.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(query);){
 
-        try {
-            con = ConnectionManager.getConnection();
-            pstmt = con.prepareStatement(query);
             pss.setValues(pstmt);
             pstmt.executeUpdate();
-        } finally {
-            if (pstmt != null) {
-                pstmt.close();
-            }
-
-            if (con != null) {
-                con.close();
-            }
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
         }
-
     }
-    public List query(String query, PreparedStatementSetter pss, RowMapper rowMapper) throws SQLException {
-        Connection con = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
 
-        try {
-            con = ConnectionManager.getConnection();
-            pstmt = con.prepareStatement(query);
+    public List query(String query, PreparedStatementSetter pss, RowMapper rowMapper) throws DataAccessException{
+        try (Connection conn = ConnectionManager.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(query);
+            ResultSet rs = pstmt.executeQuery();){
 
             pss.setValues(pstmt);
-            rs = pstmt.executeQuery();
 
             List<Object> result = new ArrayList<>();
             while (rs.next()) {
@@ -52,16 +38,8 @@ public class JdbcTemplate {
             }
             return result;
 
-        } finally {
-            if (rs != null) {
-                rs.close();
-            }
-            if (pstmt != null) {
-                pstmt.close();
-            }
-            if (con != null) {
-                con.close();
-            }
+        } catch (SQLException e){
+            throw new DataAccessException(e);
         }
     }
 
@@ -73,9 +51,4 @@ public class JdbcTemplate {
 
         return result.get(0);
     }
-
-//    abstract public Object mapRow(ResultSet rs) throws SQLException;
-//
-//
-//    abstract public void setValues(PreparedStatement pstmt) throws SQLException;
 }
