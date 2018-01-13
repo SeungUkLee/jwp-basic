@@ -52,7 +52,7 @@ public class UserDao {
 
             }
         };
-        RowMapper rowMapper = new RowMapper() {
+        RowMapper<User> rowMapper = new RowMapper() {
             @Override
             public Object mapRow(ResultSet rs) throws SQLException {
                 return new User(
@@ -65,7 +65,7 @@ public class UserDao {
         };
 
         String findAllSelcectQuery = "SELECT userId, password, name, email FROM USERS";
-        return (List<User>) selectJdbcTemplate.query(findAllSelcectQuery, pss,rowMapper);
+        return selectJdbcTemplate.query(findAllSelcectQuery, pss, rowMapper);
     }
 
     public User findByUserId(String userId) throws SQLException {
@@ -76,7 +76,7 @@ public class UserDao {
                 pstmt.setString(1, userId);
             }
         };
-        RowMapper rowMapper = new RowMapper() {
+        RowMapper<User> rowMapper = new RowMapper() {
             @Override
             public Object mapRow(ResultSet rs) throws SQLException {
                 return new User(
@@ -88,6 +88,6 @@ public class UserDao {
             }
         };
         String findByUserIdSelectQuery = "SELECT userId, password, name, email FROM USERS WHERE userId = ?";
-        return (User)selectJdbcTemplate.queryForObject(findByUserIdSelectQuery, pss, rowMapper);
+        return selectJdbcTemplate.queryForObject(findByUserIdSelectQuery, pss, rowMapper);
     }
 }
