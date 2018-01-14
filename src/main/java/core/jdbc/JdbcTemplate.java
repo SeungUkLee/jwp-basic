@@ -25,7 +25,11 @@ public class JdbcTemplate {
         }
     }
 
-    public <T> List<T> query(String query, PreparedStatementSetter pss, RowMapper<T> rowMapper) throws DataAccessException{
+    public void update(String query, Object... parameters) throws DataAccessException {
+        update(query, createPreparedStatementSetter(parameters));
+    }
+
+    public <T> List<T> query(String query, RowMapper<T> rowMapper, PreparedStatementSetter pss) throws DataAccessException{
         try (Connection conn = ConnectionManager.getConnection();
             PreparedStatement pstmt = conn.prepareStatement(query);
             ResultSet rs = pstmt.executeQuery();){
@@ -43,12 +47,28 @@ public class JdbcTemplate {
         }
     }
 
-    public <T> T queryForObject(String query, PreparedStatementSetter pss, RowMapper<T> rowMapper) throws SQLException {
-        List<T> result = query(query, pss, rowMapper);
+    public <T> List<T> query(String query, RowMapper<T> rowMapper, Object... parameters) throws DataAccessException {
+        return query(query, rowMapper, createPreparedStatementSetter(parameters));
+    }
+
+    public <T> T queryForObject(String query, RowMapper<T> rowMapper,  PreparedStatementSetter pss) throws DataAccessException {
+        List<T> result = query(query, rowMapper, pss);
         if (result.isEmpty()) {
             return null;
         }
 
         return result.get(0);
+    }
+
+    public <T> T queryForObject(String query, RowMapper<T> rowMapper, Object... parameters) throws DataAccessException {
+        return queryForObject(query, rowMapper, createPreparedStatementSetter(parameters));
+    }
+
+    public PreparedStatementSetter createPreparedStatementSetter(Object ... parameters) {
+        return pstmt -> {
+            for (int i = 0; i < parameters.length; i++) {
+                pstmt.setObject(i+1, parameters[i]);
+            }
+        };
     }
 }
