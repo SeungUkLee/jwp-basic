@@ -30,11 +30,12 @@ public class JdbcTemplate {
     }
 
     public <T> List<T> query(String query, RowMapper<T> rowMapper, PreparedStatementSetter pss) throws DataAccessException{
+        ResultSet rs = null;
         try (Connection conn = ConnectionManager.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(query);
-            ResultSet rs = pstmt.executeQuery();){
+            PreparedStatement pstmt = conn.prepareStatement(query);){
 
             pss.setValues(pstmt);
+            rs = pstmt.executeQuery();
 
             List<T> result = new ArrayList<>();
             while (rs.next()) {
@@ -44,6 +45,14 @@ public class JdbcTemplate {
 
         } catch (SQLException e){
             throw new DataAccessException(e);
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+            } catch (SQLException e) {
+                throw new DataAccessException(e);
+            }
         }
     }
 
